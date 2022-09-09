@@ -31,7 +31,7 @@ class NifiCollection(Resource):
         Creates a new blog category.
         """
         data = request.json
-        template_dir ="~/template"
+        template_dir ="/home/abdoulayesarr/template"
         # start up position
         origin_x = 661
         origin_y = -45

@@ -25,25 +25,27 @@ from jinja2 import Template
 
 #args = parser.parse_args()
 
-hostname = "localhost"
-port = "8080"
-template_dir = "~/template"
-remove_after_create = False
-# username = args.username
-# password = args.password
-cert_file = "~/template"
 
-host_url = "http://" + hostname + ":" + port + "/nifi-api"
+hostname = "51.77.212.74"
+port = "8443"
+template_dir = "/home/abdoulayesarr/template"
+remove_after_create = "/me"
+username = "admin"
+password = "admin1234Thies"
+
+cert_file = False
+
+host_url = "https://" + hostname + ":" + port + "/nifi-api"
 
 print("Host ip is {0} port is {1} and the host URL is {2}".format(hostname, port, host_url) )
 
 
 def get_root_resource_id():
     # URL to get root process group information
-    resource_url = host_url + "/flow/process-groups/root"
+    resource_url = host_url + "/flow/process-groups/226f892a-0183-1000-5a21-5986e4e6dd64"
 
-    # auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
-    response = requests.get(resource_url, verify=False, proxies={'https': ''})
+    auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
+    response = requests.get(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
 
     if not response.status_code == 200:
         print(response)
@@ -79,8 +81,8 @@ def upload_template(template_file_name):
     multipart_form_data = {
       'template': file_string,
     }
-    #auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
-    response = requests.post(upload_url, files=multipart_form_data,  verify=cert_file, proxies={'https': ''})
+    auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
+    response = requests.post(upload_url, files=multipart_form_data, headers= auth_header, verify=cert_file, proxies={'https': ''})
     print (response)
 
 
@@ -90,16 +92,16 @@ def instantiate_template(template_file_name, originX, originY):
     payload = {"templateId": get_template_id(template_file_name), "originX": originX, "originY": originY}
     originX = originX + 600
     originY = originY - 50
-    #auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
-    response = requests.post(create_instance_url, json=payload,  verify=cert_file, proxies={'https': ''})
+    auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
+    response = requests.post(create_instance_url, json=payload, headers= auth_header, verify=cert_file, proxies={'https': ''})
     handle_error(create_instance_url, response)
 
 
 # get list of templates that used for searching template id
 def get_templates():
     get_template_instance_url = host_url + "/flow/templates"
-    #auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
-    response = requests.get(get_template_instance_url,   verify=cert_file, proxies={'https': ''})
+    auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
+    response = requests.get(get_template_instance_url,  headers= auth_header, verify=cert_file, proxies={'https': ''})
     handle_error(get_template_instance_url, response)
     json = response.json()
     templates = json["templates"]
@@ -123,8 +125,8 @@ def get_template_id(template_file_name):
 def remove_template(template_id):
     if template_id != "":
         delete_template_url = host_url + "/templates/" + template_id
-        #auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
-        response = requests.delete(delete_template_url,  verify=cert_file, proxies={'https': ''})
+        auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
+        response = requests.delete(delete_template_url, headers= auth_header, verify=cert_file, proxies={'https': ''})
         handle_error(delete_template_url, response)
     else:
         raise SystemError("Can not remove template without a template id")
@@ -133,18 +135,18 @@ def remove_template(template_id):
 # check current user session if any
 def check_current_user():
     current_user_url = host_url + "/flow/current-user"
-    #auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
+    auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
     print(current_user_url)
-    res = requests.get(current_user_url,  verify=cert_file, proxies={'https': ''})
+    res = requests.get(current_user_url, headers=auth_header, verify=cert_file, proxies={'https': ''})
     handle_error(current_user_url, res)
 
 
 # get authentication token(JWT token) using username and password
-# def get_auth_token() :
-#     auth_token_url = host_url + "/access/token"
-#     res = requests.post(auth_token_url, data={'username': username, 'password': password}, verify=cert_file, proxies={'https': ''})
-#     handle_error(auth_token_url, res)
-#     return res.text
+def get_auth_token() -> str:
+    auth_token_url = host_url + "/access/token"
+    res = requests.post(auth_token_url, data={'username': username, 'password': password}, verify=cert_file, proxies={'https': ''})
+    handle_error(auth_token_url, res)
+    return res.text
 
 
 # Check and raise exception for a given
