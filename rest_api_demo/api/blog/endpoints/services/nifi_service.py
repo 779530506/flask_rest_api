@@ -123,6 +123,7 @@ def get_template_id(template_file_name):
 
 # removes a template from nifi cluster by its id.
 def remove_template(template_id):
+    
     if template_id != "":
         delete_template_url = host_url + "/templates/" + template_id
         auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
@@ -163,7 +164,49 @@ def deploy_template(template_file, origin_x, origin_y):
     if remove_after_create == "true":
         remove_template(get_template_id(template_file.name))
 
+def getHopitalByName(hospital_name):
+    # URL to get root process group information
+    resource_url = host_url + "/flow/process-groups/226f892a-0183-1000-5a21-5986e4e6dd64"
 
+    auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
+    response = requests.get(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
+
+
+    json = response.json()
+    id_pg=[pg["component"]["id"] for pg in json["processGroupFlow"]["flow"]["processGroups"] if pg["component"]["name"]==hospital_name]
+    
+    if len(id_pg)>0:
+        return id_pg[0]
+    else:
+        return ""
+def getDepHopitalByName(id_hospital,name_deparetement):
+    # URL to get root process group information
+    resource_url = host_url + "/flow/process-groups/"+id_hospital
+
+    auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
+    response = requests.get(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
+
+
+    json = response.json()
+    id_pg=[{"id":pg["component"]["id"],"revision":pg["revision"]} for pg in json["processGroupFlow"]["flow"]["processGroups"] if pg["component"]["name"]==name_deparetement]
+    
+    if len(id_pg)>0:
+        return id_pg[0]
+    else:
+        return ""
+def deleteDep(name_hopital,name_dep):
+    id_hopital = getHopitalByName(name_hopital)
+    inf_processor= getDepHopitalByName(id_hopital,name_dep)
+    # URL to get root process group information
+    resource_url = host_url + "/process-groups/"+inf_processor["id"]+"?clientId="+inf_processor["revision"]["clientId"]+"&version="+str(inf_processor["revision"]["version"])
+    auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
+    response = requests.delete(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
+    handle_error(resource_url, response)
+    json = response.json()
+
+    return json
+
+  
 # # main function starts here
 # def main():
 
