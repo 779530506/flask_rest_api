@@ -1,3 +1,5 @@
+from bdb import Breakpoint
+from ensurepip import version
 import requests
 import json
 import sys
@@ -6,7 +8,7 @@ import xml.etree.ElementTree as ET
 import argparse
 import os
 from jinja2 import Template
-
+import logging
 # Get command args
 # parser = argparse.ArgumentParser(description='Deploy templates to secured nifi cluster')
 # parser.add_argument('--hostname', metavar='hostname', dest="hostname", type=str, required=True,
@@ -25,7 +27,7 @@ from jinja2 import Template
 
 #args = parser.parse_args()
 
-
+log = logging.getLogger(__name__)
 hostname = "51.77.212.74"
 port = "8443"
 template_dir = "/home/abdoulayesarr/template"
@@ -188,24 +190,62 @@ def getDepHopitalByName(id_hospital,name_deparetement):
 
 
     json = response.json()
-    id_pg=[{"id":pg["component"]["id"],"revision":pg["revision"]} for pg in json["processGroupFlow"]["flow"]["processGroups"] if pg["component"]["name"]==name_deparetement]
+    id_pg=[pg["component"]["id"] for pg in json["processGroupFlow"]["flow"]["processGroups"] if pg["component"]["name"]==name_deparetement]
     
     if len(id_pg)>0:
         return id_pg[0]
     else:
         return ""
-def deleteDep(name_hopital,name_dep):
-    id_hopital = getHopitalByName(name_hopital)
-    inf_processor= getDepHopitalByName(id_hopital,name_dep)
+
+def getPipelineDepByName(id_departement,name_pipeline):
     # URL to get root process group information
-    resource_url = host_url + "/process-groups/"+inf_processor["id"]+"?clientId="+inf_processor["revision"]["clientId"]+"&version="+str(inf_processor["revision"]["version"])
+    resource_url = host_url + "/flow/process-groups/"+id_departement
+
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
-    response = requests.delete(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
-    handle_error(resource_url, response)
+    response = requests.get(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
+
+
     json = response.json()
+    info_pg=[{"id":pg["component"]["id"],"revision":pg["revision"]} for pg in json["processGroupFlow"]["flow"]["processGroups"] if pg["component"]["name"]==name_pipeline]
+    
+    if len(info_pg)>0:
+        return info_pg[0]
+    else:
+        return ""
 
-    return json
+def deleteDep(name_hopital,name_dep,name_pipeline):
+    
+    try:
+        id_hopital = getHopitalByName(name_hopital)
+    except Exception as e :
+        log.error('Error de recupération hopital: %s'%str(e))
+        raise Exception('Error de recupération hopital: %s'%str(e))
 
+    try: 
+        id_departement= getDepHopitalByName(id_hopital,name_dep)
+    except Exception as e :
+        log.error('Error de recupération departement: %s'%str(e))
+        raise Exception('Error de recupération departement: %s'%str(e))
+    try: 
+        info_processor= getPipelineDepByName(id_departement,name_pipeline)
+        client_id = info_processor["revision"]["clientId"]
+        id_processor_group = info_processor["id"]
+        version = info_processor["revision"]["version"]
+    except Exception as e :
+        log.error('Error de recupération pipeline: %s'%str(e))
+        raise Exception('Error de recupération pipeline: %s'%str(e))
+    
+    
+    try:
+        resource_url = host_url + "/process-groups/"+id_processor_group+"?clientId="+client_id+"&version="+str(version)
+        auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
+        response = requests.delete(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
+        handle_error(resource_url, response)
+        json = response.json()
+
+        return json
+    except Exception as e:
+        raise Exception('impossible de suprimer un pipeline: %s'% str(e))
   
 # # main function starts here
 # def main():
