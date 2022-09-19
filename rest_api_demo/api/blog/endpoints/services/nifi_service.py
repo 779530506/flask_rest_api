@@ -89,8 +89,9 @@ def upload_template(template_file_name):
 
 
 # create an instance using the template id
-def instantiate_template(template_file_name, originX, originY):
-    create_instance_url = host_url + "/process-groups/" + get_root_resource_id() + "/template-instance"
+def instantiate_template(dep_id,template_file_name, originX, originY):
+    #create_instance_url = host_url + "/process-groups/" + get_root_resource_id() + "/template-instance"
+    create_instance_url = host_url + "/process-groups/" + dep_id + "/template-instance"
     payload = {"templateId": get_template_id(template_file_name), "originX": originX, "originY": originY}
     originX = originX + 600
     originY = originY - 50
@@ -116,6 +117,7 @@ def get_template_id(template_file_name):
     template_id = ""
     for template in templates:
         print(template)
+        
         print(template_file_name)
         if get_template_name(template_dir + "/" + template_file_name) == template["template"]["name"]:
             print ("Creating instance of " + template["template"]["name"] + " ...")
@@ -159,10 +161,10 @@ def handle_error(endpoint, res):
 
 
 # deploys a template to nifi for a specified location
-def deploy_template(template_file, origin_x, origin_y):
+def deploy_template(dep_id,template_file, origin_x, origin_y):
     remove_template(get_template_id(template_file.name))
     upload_template(template_file.name)
-    instantiate_template(template_file.name, origin_x, origin_y)
+    instantiate_template(dep_id,template_file.name, origin_x, origin_y)
     if remove_after_create == "true":
         remove_template(get_template_id(template_file.name))
 
@@ -246,7 +248,29 @@ def deleteDep(name_hopital,name_dep,name_pipeline):
         return json
     except Exception as e:
         raise Exception('impossible de suprimer un pipeline: %s'% str(e))
-  
+
+def createPipelineInDepartement(name_hopital,name_dep):
+    template_dir ="/home/abdoulayesarr/template"
+    # start up position
+    origin_x = 661
+    origin_y = -45
+
+    # Make sure current user login is okay
+    check_current_user()
+    try:
+        id_hopital = getHopitalByName(name_hopital)
+    except Exception as e :
+        log.error('Error de recupération hopital: %s'%str(e))
+        raise Exception('Error de recupération hopital: %s'%str(e))
+    try: 
+        id_departement= getDepHopitalByName(id_hopital,name_dep)
+    except Exception as e :
+        log.error('Error de recupération departement: %s'%str(e))
+        raise Exception('Error de recupération departement: %s'%str(e))
+    for template_file in pathlib.Path(template_dir).iterdir():
+        if template_file.is_file():
+            deploy_template(id_departement,template_file, origin_x, origin_y)
+
 # # main function starts here
 # def main():
 

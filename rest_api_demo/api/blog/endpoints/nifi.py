@@ -6,7 +6,7 @@ from rest_api_demo.api.blog.business import create_category, delete_category, up
 from rest_api_demo.api.blog.serializers import category, category_with_posts
 from rest_api_demo.api.restplus import api
 import pathlib
-from rest_api_demo.api.blog.endpoints.services.nifi_service import deleteDep,check_current_user,deploy_template
+from rest_api_demo.api.blog.endpoints.services.nifi_service import deleteDep,createPipelineInDepartement
 from flask_restplus import fields
 
 log = logging.getLogger(__name__)
@@ -18,6 +18,10 @@ nifi_delete_pipeline = api.model('Delete pipeline', {
     'name_hospital': fields.String(required=True),
     'name_dep': fields.String(required=True),
     'name_pipeline': fields.String(required=True),
+})
+nifi_deploy_pipeline = api.model('Deploy pipeline', {
+    'name_hospital': fields.String(required=True),
+    'name_dep': fields.String(required=True),
 })
 
 
@@ -33,23 +37,15 @@ class NifiCollection(Resource):
     #     return categories
 
     @api.response(201, 'template successfully created.')
-    @api.expect(category)
-    def post(self,name):
+    @api.expect(nifi_deploy_pipeline)
+    def post(self):
         """
         Creates a new blog category.
         """
         data = request.json
-        template_dir ="/home/abdoulayesarr/template"
-        # start up position
-        origin_x = 661
-        origin_y = -45
-
-        # Make sure current user login is okay
-        check_current_user()
-
-        for template_file in pathlib.Path(template_dir).iterdir():
-            if template_file.is_file():
-                deploy_template(template_file, origin_x, origin_y)
+        name_hospital= data['name_hospital']
+        name_dep = data['name_dep']
+        createPipelineInDepartement(name_hospital,name_dep)
 
         return None, 201
     
