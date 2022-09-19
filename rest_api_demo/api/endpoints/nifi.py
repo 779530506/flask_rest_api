@@ -6,7 +6,7 @@ from rest_api_demo.api.blog.business import create_category, delete_category, up
 from rest_api_demo.api.blog.serializers import category, category_with_posts
 from rest_api_demo.api.restplus import api
 import pathlib
-from rest_api_demo.api.blog.endpoints.services.nifi_service import deleteDep,createPipelineInDepartement
+from rest_api_demo.api.services.nifi_service import deleteDep,createPipelineInDepartement
 from flask_restplus import fields
 
 log = logging.getLogger(__name__)

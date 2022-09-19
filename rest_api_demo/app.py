@@ -5,7 +5,7 @@ from flask import Flask, Blueprint
 from rest_api_demo import settings
 from rest_api_demo.api.blog.endpoints.posts import ns as blog_posts_namespace
 from rest_api_demo.api.blog.endpoints.categories import ns as blog_categories_namespace
-from rest_api_demo.api.blog.endpoints.nifi import ns as nifi_namespace
+from rest_api_demo.api.endpoints.nifi import ns as nifi_namespace
 from rest_api_demo.api.restplus import api
 from rest_api_demo.database import db
 

@@ -71,7 +71,6 @@ def upload_template(template_file_name):
     print (upload_url)
     file_string = open(template_dir+ "/" + template_file_name, 'r').read()
 
-
     # using jinjia template
 
     #template = Template(file_string)
