@@ -22,6 +22,7 @@ nifi_delete_pipeline = api.model('Delete pipeline', {
 nifi_deploy_pipeline = api.model('Deploy pipeline', {
     'name_hospital': fields.String(required=True),
     'name_dep': fields.String(required=True),
+    'name_pipeline': fields.String(required=True)
 })
 
 
@@ -45,7 +46,8 @@ class NifiCollection(Resource):
         data = request.json
         name_hospital= data['name_hospital']
         name_dep = data['name_dep']
-        createPipelineInDepartement(name_hospital,name_dep)
+        name_pipeline = data['name_pipeline']
+        createPipelineInDepartement(name_hospital,name_dep,name_pipeline)
 
         return None, 201
     

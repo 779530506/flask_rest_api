@@ -9,6 +9,8 @@ import argparse
 import os
 from jinja2 import Template
 import logging
+from rest_api_demo import settings
+
 # Get command args
 # parser = argparse.ArgumentParser(description='Deploy templates to secured nifi cluster')
 # parser.add_argument('--hostname', metavar='hostname', dest="hostname", type=str, required=True,
@@ -30,7 +32,7 @@ import logging
 log = logging.getLogger(__name__)
 hostname = "51.77.212.74"
 port = "8443"
-template_dir = "/home/abdoulayesarr/template"
+template_dir = "/home/abdoulayesarr/template/rep_nifi/"
 remove_after_create = "/me"
 username = "admin"
 password = "admin1234Thies"
@@ -44,7 +46,7 @@ print("Host ip is {0} port is {1} and the host URL is {2}".format(hostname, port
 
 def get_root_resource_id():
     # URL to get root process group information
-    resource_url = host_url + "/flow/process-groups/226f892a-0183-1000-5a21-5986e4e6dd64"
+    resource_url = host_url + "/flow/process-groups/c2fc4b9b-3395-1c76-bea7-6d27e5170942"
 
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
     response = requests.get(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
@@ -69,10 +71,8 @@ def get_template_name(file):
 def upload_template(template_file_name):
     upload_url = host_url + "/process-groups/" + get_root_resource_id() + "/templates/upload"
     print (upload_url)
-    file_string = open(template_dir+ "/" + template_file_name, 'r').read()
-
+    file_string = open(template_dir+ "" + template_file_name, 'r').read()
     # using jinjia template
-
     #template = Template(file_string)
     # rendered= template.render(password=os.environ['es_password'])
     # multipart_form_data = {
@@ -169,7 +169,7 @@ def deploy_template(dep_id,template_file, origin_x, origin_y):
 
 def getHopitalByName(hospital_name):
     # URL to get root process group information
-    resource_url = host_url + "/flow/process-groups/226f892a-0183-1000-5a21-5986e4e6dd64"
+    resource_url = host_url + "/flow/process-groups/c2fc4b9b-3395-1c76-bea7-6d27e5170942"
 
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
     response = requests.get(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
@@ -248,27 +248,65 @@ def deleteDep(name_hopital,name_dep,name_pipeline):
     except Exception as e:
         raise Exception('impossible de suprimer un pipeline: %s'% str(e))
 
-def createPipelineInDepartement(name_hopital,name_dep):
+def createPipelineInDepartement(name_hopital,name_dep,name_pipeline):
     template_dir ="/home/abdoulayesarr/template"
     # start up position
     origin_x = 661
     origin_y = -45
-
+    KAFKA_Group_ID_NAME = '_'.join(["elastic",name_hopital,name_dep,name_pipeline])
+    KAFKA_TOPIC_NAME    = '_'.join([name_hopital,name_dep,name_pipeline])
     # Make sure current user login is okay
     check_current_user()
     try:
         id_hopital = getHopitalByName(name_hopital)
     except Exception as e :
         log.error('Error de recupération hopital: %s'%str(e))
-        raise Exception('Error de recupération hopital: %s'%str(e))
+        return 'Error de recupération hopital: %s'% str(e)
     try: 
         id_departement= getDepHopitalByName(id_hopital,name_dep)
     except Exception as e :
         log.error('Error de recupération departement: %s'%str(e))
         raise Exception('Error de recupération departement: %s'%str(e))
     for template_file in pathlib.Path(template_dir).iterdir():
+        
         if template_file.is_file():
-            deploy_template(id_departement,template_file, origin_x, origin_y)
+
+            mytree = ET.parse(template_file)
+            myroot = mytree.getroot()
+            names = [elem for elem in myroot.iter('name')]
+            for name in names:
+                if name.text == "TEMPLATE_PIPELINENAME": 
+                    name.text = name_pipeline
+                if name.text == "TEMPLATE_PIPELINE": 
+                    name.text = name_pipeline
+                
+            elem = [elem for elem in myroot.iter('value')]
+            for e in elem:
+                #print(e) 
+                if e.text=="KAFKA_TOPIC_NAME":
+                    e.text = KAFKA_TOPIC_NAME
+                if e.text == "KAFKA_BROKER_PORT":
+                    e.text = settings.KAFKA_BROKER_PORT
+                if e.text=="KAFKA_Group_ID_NAME":
+                    e.text = KAFKA_Group_ID_NAME
+                if e.text == "ELASTIC_URL_PORT":
+                    e.text = settings.ELASTIC_URL_PORT
+                if e.text=="ELASTIC_PASSWORD":
+                    e.text = settings.ELASTIC_PASSWORD
+                if e.text == "ELASTIC_USERNAME":
+                    e.text = settings.ELASTIC_USERNAME
+                if e.text=="ELASTIC_INDEX_NAME":
+                    e.text = KAFKA_TOPIC_NAME
+                if e.text == "DLQ_KAFKA_TOPIC":
+                    e.text = settings.DLQ_KAFKA_TOPIC
+                if e.text=="JSON_RECORD_READER":
+                    e.text = settings.JSON_RECORD_READER
+                if e.text == "JSON_RECORD_WRITER":
+                    e.text = settings.JSON_RECORD_WRITER
+            mytree.write(template_dir+'/rep_nifi/my_template.xml')  
+            #template_file=template_dir+'/rep_nifi/templatefinale.xml'
+            for template_files in pathlib.Path(template_dir+'/rep_nifi').iterdir():
+                deploy_template(id_departement,template_files, origin_x, origin_y)
 
 # # main function starts here
 # def main():
