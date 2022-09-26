@@ -12,41 +12,16 @@ from jinja2 import Template
 import logging
 from rest_api_demo import settings
 
-# Get command args
-# parser = argparse.ArgumentParser(description='Deploy templates to secured nifi cluster')
-# parser.add_argument('--hostname', metavar='hostname', dest="hostname", type=str, required=True,
-#                     help="nifi cluster hostname")
-# parser.add_argument('--port', metavar='port', type=str, dest="port", required=True, help="nifi cluster ports")
-# parser.add_argument('--template-dir', metavar='template dir', type=str, dest="template_dir", required=True,
-#                     default="./template", help="the dir that contains nifi templates (default to ./template)")
-# parser.add_argument('--cert-file', metavar='path to cert file', type=str, dest="cert_file", required=False,
-#                     default="./certs/nifi.cer", help="the path to the cert file (default to ./certs/nifi.cer)")
-# parser.add_argument('--username', metavar='username', type=str, dest="username", required=False,
-#                     help="username to login to nifi cluster")
-# parser.add_argument('--password', metavar='password', type=str, dest="password", required=True,
-#                     help="password to login to nifi cluster")
-# parser.add_argument('--delete-after-create', metavar='delete after create', type=str, dest="remove_after_create",
-#                     required=False, default=True, help="Delete template after it has been instantiated")
-
-#args = parser.parse_args()
+        
 
 log = logging.getLogger(__name__)
-hostname = "51.77.212.74"
-port = "8443"
-remove_after_create = "/me"
-username = "admin"
-password = "admin1234Thies"
 
-cert_file = False
 
-host_url = "https://" + hostname + ":" + port + "/nifi-api"
-
-print("Host ip is {0} port is {1} and the host URL is {2}".format(hostname, port, host_url) )
 
 
 def get_root_resource_id():
     # URL to get root process group information
-    resource_url = host_url + "/flow/process-groups/c2fc4b9b-3395-1c76-bea7-6d27e5170942"
+    resource_url = settings.HOST_URL + "/flow/process-groups/c2fc4b9b-3395-1c76-bea7-6d27e5170942"
 
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
     response = requests.get(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
@@ -69,7 +44,7 @@ def get_template_name(file):
 
 # upload the template from local to remote nifi cluster
 def upload_template(template_file_name,params):
-    upload_url = host_url + "/process-groups/" + get_root_resource_id() + "/templates/upload"
+    upload_url = settings.HOST_URL + "/process-groups/" + get_root_resource_id() + "/templates/upload"
     print (upload_url)
     file_string = open(settings.TEMPLATE_DIR+ "" + template_file_name, 'r').read().replace('TEMPLATE_PIPELINE',params["name_pipeline"])
     file_string=file_string.replace('KAFKA_TOPIC_NAME',params["KAFKA_TOPIC_NAME"])
@@ -89,27 +64,27 @@ def upload_template(template_file_name,params):
       'template': file_string,
     }
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
-    response = requests.post(upload_url, files=multipart_form_data, headers= auth_header, verify=cert_file, proxies={'https': ''})
+    response = requests.post(upload_url, files=multipart_form_data, headers= auth_header, verify=settings.CERT_FILE, proxies={'https': ''})
     print (response)
 
 
 # create an instance using the template id
 def instantiate_template(dep_id,template_file_name, originX, originY):
-    #create_instance_url = host_url + "/process-groups/" + get_root_resource_id() + "/template-instance"
-    create_instance_url = host_url + "/process-groups/" + dep_id + "/template-instance"
+    #create_instance_url = settings.HOST_URL + "/process-groups/" + get_root_resource_id() + "/template-instance"
+    create_instance_url = settings.HOST_URL + "/process-groups/" + dep_id + "/template-instance"
     payload = {"templateId": get_template_id(template_file_name), "originX": originX, "originY": originY}
     originX = originX + 600
     originY = originY - 50
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
-    response = requests.post(create_instance_url, json=payload, headers= auth_header, verify=cert_file, proxies={'https': ''})
+    response = requests.post(create_instance_url, json=payload, headers= auth_header, verify=settings.CERT_FILE, proxies={'https': ''})
     handle_error(create_instance_url, response)
 
 
 # get list of templates that used for searching template id
 def get_templates():
-    get_template_instance_url = host_url + "/flow/templates"
+    get_template_instance_url = settings.HOST_URL + "/flow/templates"
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
-    response = requests.get(get_template_instance_url,  headers= auth_header, verify=cert_file, proxies={'https': ''})
+    response = requests.get(get_template_instance_url,  headers= auth_header, verify=settings.CERT_FILE, proxies={'https': ''})
     handle_error(get_template_instance_url, response)
     json = response.json()
     templates = json["templates"]
@@ -134,9 +109,9 @@ def get_template_id(template_file_name):
 def remove_template(template_id):
     
     if template_id != "":
-        delete_template_url = host_url + "/templates/" + template_id
+        delete_template_url = settings.HOST_URL + "/templates/" + template_id
         auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
-        response = requests.delete(delete_template_url, headers= auth_header, verify=cert_file, proxies={'https': ''})
+        response = requests.delete(delete_template_url, headers= auth_header, verify=settings.CERT_FILE, proxies={'https': ''})
         handle_error(delete_template_url, response)
     else:
         raise SystemError("Can not remove template without a template id")
@@ -144,17 +119,17 @@ def remove_template(template_id):
 
 # check current user session if any
 def check_current_user():
-    current_user_url = host_url + "/flow/current-user"
+    current_user_url = settings.HOST_URL + "/flow/current-user"
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
     print(current_user_url)
-    res = requests.get(current_user_url, headers=auth_header, verify=cert_file, proxies={'https': ''})
+    res = requests.get(current_user_url, headers=auth_header, verify=settings.CERT_FILE, proxies={'https': ''})
     handle_error(current_user_url, res)
 
 
-# get authentication token(JWT token) using username and password
+# get authentication token(JWT token) using settings.USERNAME_NIFI and password
 def get_auth_token() -> str:
-    auth_token_url = host_url + "/access/token"
-    res = requests.post(auth_token_url, data={'username': username, 'password': password}, verify=cert_file, proxies={'https': ''})
+    auth_token_url = settings.HOST_URL + "/access/token"
+    res = requests.post(auth_token_url, data={'username': settings.USERNAME_NIFI, 'password': settings.PASSWORD_NIFI}, verify=settings.CERT_FILE, proxies={'https': ''})
     handle_error(auth_token_url, res)
     return res.text
 
@@ -170,15 +145,15 @@ def deploy_template(dep_id,template_file, params ):
     # start up position
     origin_x = 661
     origin_y = -45
-    #remove_template(get_template_id(template_file.name))
+    remove_template(get_template_id(template_file.name))
     upload_template(template_file.name,params)
     instantiate_template(dep_id,template_file.name, origin_x, origin_y)
-    if remove_after_create == "true":
+    if settings.REMOVE_AFTER_CREATE == "true":
         remove_template(get_template_id(template_file.name))
 
 def getHopitalByName(hospital_name):
     # URL to get root process group information
-    resource_url = host_url + "/flow/process-groups/c2fc4b9b-3395-1c76-bea7-6d27e5170942"
+    resource_url = settings.HOST_URL + "/flow/process-groups/c2fc4b9b-3395-1c76-bea7-6d27e5170942"
 
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
     response = requests.get(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
@@ -193,7 +168,7 @@ def getHopitalByName(hospital_name):
         return ""
 def getDepHopitalByName(id_hospital,name_deparetement):
     # URL to get root process group information
-    resource_url = host_url + "/flow/process-groups/"+id_hospital
+    resource_url = settings.HOST_URL + "/flow/process-groups/"+id_hospital
 
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
     response = requests.get(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
@@ -209,7 +184,7 @@ def getDepHopitalByName(id_hospital,name_deparetement):
 
 def getPipelineDepByName(id_departement,name_pipeline):
     # URL to get root process group information
-    resource_url = host_url + "/flow/process-groups/"+id_departement
+    resource_url = settings.HOST_URL + "/flow/process-groups/"+id_departement
 
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
     response = requests.get(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
@@ -247,7 +222,7 @@ def deleteDep(name_hopital,name_dep,name_pipeline):
     
     
     try:
-        resource_url = host_url + "/process-groups/"+id_processor_group+"?clientId="+client_id+"&version="+str(version)
+        resource_url = settings.HOST_URL + "/process-groups/"+id_processor_group+"?clientId="+client_id+"&version="+str(version)
         auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
         response = requests.delete(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
         handle_error(resource_url, response)
@@ -258,8 +233,7 @@ def deleteDep(name_hopital,name_dep,name_pipeline):
         raise Exception('impossible de suprimer un pipeline: %s'% str(e))
 
 def createPipelineInDepartement(name_hopital,name_dep,name_pipeline):
-    
-    
+   
     KAFKA_Group_ID_NAME = '_'.join(["elastic",name_hopital,name_dep,name_pipeline])
     KAFKA_TOPIC_NAME    = '_'.join([name_hopital,name_dep,name_pipeline])
     ELASTIC_INDEX_NAME = '_'.join([name_hopital,name_dep,name_pipeline])
@@ -282,7 +256,8 @@ def createPipelineInDepartement(name_hopital,name_dep,name_pipeline):
         log.error('Error de recupération departement: %s'%str(e))
         raise Exception('Error de recupération departement: %s'%str(e))
     for template_file in pathlib.Path(settings.TEMPLATE_DIR).iterdir():
-        deploy_template(id_departement,template_file,params )
+        if template_file.is_file():
+            deploy_template(id_departement,template_file,params )
 
 # # main function starts here
 # def main():

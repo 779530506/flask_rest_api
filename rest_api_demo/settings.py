@@ -25,6 +25,14 @@ ELASTIC_PASSWORD = "changeme"
 ELASTIC_USERNAME =  'elastic'
 
 DLQ_KAFKA_TOPIC = 'dlq_topic'
-
 JSON_RECORD_READER = "31c0369f-6ee5-1f6b-a1a6-93c6b940a597"
 JSON_RECORD_WRITER = '31c036a0-6ee5-1f6b-e105-485e0a3a24e5'
+
+# nifi conf
+HOSTNAME_NIFI = "51.77.212.74"
+PORT_NIFI = "8443"
+REMOVE_AFTER_CREATE = "/me"
+USERNAME_NIFI = "admin"
+PASSWORD_NIFI = "admin1234Thies"
+CERT_FILE = False
+HOST_URL = "https://" + HOSTNAME_NIFI + ":" + PORT_NIFI + "/nifi-api"
