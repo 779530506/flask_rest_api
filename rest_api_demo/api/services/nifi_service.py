@@ -1,5 +1,6 @@
 from bdb import Breakpoint
 from ensurepip import version
+from symbol import parameters
 import requests
 import json
 import sys
@@ -32,7 +33,6 @@ from rest_api_demo import settings
 log = logging.getLogger(__name__)
 hostname = "51.77.212.74"
 port = "8443"
-template_dir = "/home/abdoulayesarr/template/rep_nifi/"
 remove_after_create = "/me"
 username = "admin"
 password = "admin1234Thies"
@@ -68,16 +68,22 @@ def get_template_name(file):
 
 
 # upload the template from local to remote nifi cluster
-def upload_template(template_file_name):
+def upload_template(template_file_name,params):
     upload_url = host_url + "/process-groups/" + get_root_resource_id() + "/templates/upload"
     print (upload_url)
-    file_string = open(template_dir+ "" + template_file_name, 'r').read()
-    # using jinjia template
-    #template = Template(file_string)
-    # rendered= template.render(password=os.environ['es_password'])
-    # multipart_form_data = {
-    #   'template': rendered,
-    # }
+    file_string = open(settings.TEMPLATE_DIR+ "" + template_file_name, 'r').read().replace('TEMPLATE_PIPELINE',params["name_pipeline"])
+    file_string=file_string.replace('KAFKA_TOPIC_NAME',params["KAFKA_TOPIC_NAME"])
+    file_string=file_string.replace('ELASTIC_URL_PORT', settings.ELASTIC_URL_PORT)
+    file_string=file_string.replace('ELASTIC_PASSWORD', settings.ELASTIC_PASSWORD)
+    file_string=file_string.replace('ELASTIC_USERNAME', settings.ELASTIC_USERNAME)
+    file_string=file_string.replace('JSON_RECORD_READER', settings.JSON_RECORD_READER)
+    file_string=file_string.replace('JSON_RECORD_WRITER', settings.JSON_RECORD_WRITER)
+    file_string=file_string.replace('KAFKA_BROKER_PORT', settings.KAFKA_BROKER_PORT)
+    file_string=file_string.replace('KAFKA_Group_ID_NAME', params["KAFKA_Group_ID_NAME"])
+    file_string=file_string.replace('ELASTIC_INDEX_NAME',params["ELASTIC_INDEX_NAME"])
+    file_string=file_string.replace('DLQ_KAFKA_TOPIC', settings.DLQ_KAFKA_TOPIC)
+    
+  
 
     multipart_form_data = {
       'template': file_string,
@@ -118,7 +124,7 @@ def get_template_id(template_file_name):
         print(template)
         
         print(template_file_name)
-        if get_template_name(template_dir + "/" + template_file_name) == template["template"]["name"]:
+        if get_template_name(settings.TEMPLATE_DIR + "/" + template_file_name) == template["template"]["name"]:
             print ("Creating instance of " + template["template"]["name"] + " ...")
     template_id = template["template"]["id"]
     return template_id
@@ -160,9 +166,12 @@ def handle_error(endpoint, res):
 
 
 # deploys a template to nifi for a specified location
-def deploy_template(dep_id,template_file, origin_x, origin_y):
-    remove_template(get_template_id(template_file.name))
-    upload_template(template_file.name)
+def deploy_template(dep_id,template_file, params ):
+    # start up position
+    origin_x = 661
+    origin_y = -45
+    #remove_template(get_template_id(template_file.name))
+    upload_template(template_file.name,params)
     instantiate_template(dep_id,template_file.name, origin_x, origin_y)
     if remove_after_create == "true":
         remove_template(get_template_id(template_file.name))
@@ -249,12 +258,17 @@ def deleteDep(name_hopital,name_dep,name_pipeline):
         raise Exception('impossible de suprimer un pipeline: %s'% str(e))
 
 def createPipelineInDepartement(name_hopital,name_dep,name_pipeline):
-    template_dir ="/home/abdoulayesarr/template"
-    # start up position
-    origin_x = 661
-    origin_y = -45
+    
+    
     KAFKA_Group_ID_NAME = '_'.join(["elastic",name_hopital,name_dep,name_pipeline])
     KAFKA_TOPIC_NAME    = '_'.join([name_hopital,name_dep,name_pipeline])
+    ELASTIC_INDEX_NAME = '_'.join([name_hopital,name_dep,name_pipeline])
+    params = {
+        'KAFKA_Group_ID_NAME' : KAFKA_Group_ID_NAME,
+        'KAFKA_TOPIC_NAME': KAFKA_TOPIC_NAME,
+        'name_pipeline': name_pipeline,
+        'ELASTIC_INDEX_NAME': ELASTIC_INDEX_NAME 
+        }
     # Make sure current user login is okay
     check_current_user()
     try:
@@ -267,46 +281,8 @@ def createPipelineInDepartement(name_hopital,name_dep,name_pipeline):
     except Exception as e :
         log.error('Error de recupération departement: %s'%str(e))
         raise Exception('Error de recupération departement: %s'%str(e))
-    for template_file in pathlib.Path(template_dir).iterdir():
-        
-        if template_file.is_file():
-
-            mytree = ET.parse(template_file)
-            myroot = mytree.getroot()
-            names = [elem for elem in myroot.iter('name')]
-            for name in names:
-                if name.text == "TEMPLATE_PIPELINENAME": 
-                    name.text = name_pipeline
-                if name.text == "TEMPLATE_PIPELINE": 
-                    name.text = name_pipeline
-                
-            elem = [elem for elem in myroot.iter('value')]
-            for e in elem:
-                #print(e) 
-                if e.text=="KAFKA_TOPIC_NAME":
-                    e.text = KAFKA_TOPIC_NAME
-                if e.text == "KAFKA_BROKER_PORT":
-                    e.text = settings.KAFKA_BROKER_PORT
-                if e.text=="KAFKA_Group_ID_NAME":
-                    e.text = KAFKA_Group_ID_NAME
-                if e.text == "ELASTIC_URL_PORT":
-                    e.text = settings.ELASTIC_URL_PORT
-                if e.text=="ELASTIC_PASSWORD":
-                    e.text = settings.ELASTIC_PASSWORD
-                if e.text == "ELASTIC_USERNAME":
-                    e.text = settings.ELASTIC_USERNAME
-                if e.text=="ELASTIC_INDEX_NAME":
-                    e.text = KAFKA_TOPIC_NAME
-                if e.text == "DLQ_KAFKA_TOPIC":
-                    e.text = settings.DLQ_KAFKA_TOPIC
-                if e.text=="JSON_RECORD_READER":
-                    e.text = settings.JSON_RECORD_READER
-                if e.text == "JSON_RECORD_WRITER":
-                    e.text = settings.JSON_RECORD_WRITER
-            mytree.write(template_dir+'/rep_nifi/my_template.xml')  
-            #template_file=template_dir+'/rep_nifi/templatefinale.xml'
-            for template_files in pathlib.Path(template_dir+'/rep_nifi').iterdir():
-                deploy_template(id_departement,template_files, origin_x, origin_y)
+    for template_file in pathlib.Path(settings.TEMPLATE_DIR).iterdir():
+        deploy_template(id_departement,template_file,params )
 
 # # main function starts here
 # def main():

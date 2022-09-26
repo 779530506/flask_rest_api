@@ -2,8 +2,6 @@ import logging
 
 from flask import request
 from flask_restplus import Resource,reqparse
-from rest_api_demo.api.blog.business import create_category, delete_category, update_category
-from rest_api_demo.api.blog.serializers import category, category_with_posts
 from rest_api_demo.api.restplus import api
 import pathlib
 from rest_api_demo.api.services.nifi_service import deleteDep,createPipelineInDepartement
