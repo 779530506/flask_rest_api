@@ -10,7 +10,7 @@ import argparse
 import os
 from jinja2 import Template
 import logging
-from rest_api_demo import settings
+import settings
 
         
 

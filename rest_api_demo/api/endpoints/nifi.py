@@ -1,9 +1,9 @@
 import logging
 from flask import request
 from flask_restplus import Resource
-from rest_api_demo.api.restplus import api
-from rest_api_demo.api.services.nifi_service import deleteDep,createPipelineInDepartement
-from rest_api_demo.api.serializers import nifi_delete_pipeline,nifi_deploy_pipeline
+from api.restplus import api
+from api.services.nifi_service import deleteDep,createPipelineInDepartement
+from api.serializers import nifi_delete_pipeline,nifi_deploy_pipeline
 
 log = logging.getLogger(__name__)
 

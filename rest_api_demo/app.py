@@ -2,10 +2,10 @@ import logging.config
 
 import os
 from flask import Flask, Blueprint
-from rest_api_demo import settings
-from rest_api_demo.api.endpoints.nifi import ns as nifi_namespace
-from rest_api_demo.api.restplus import api
-from rest_api_demo.database import db
+import settings
+from api.endpoints.nifi import ns as nifi_namespace
+from api.restplus import api
+from database import db
 
 app = Flask(__name__)
 logging_conf_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../logging.conf'))

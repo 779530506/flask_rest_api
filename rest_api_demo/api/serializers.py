@@ -1,4 +1,4 @@
-from rest_api_demo.api.restplus import api
+from api.restplus import api
 from flask_restplus import fields
 
 
