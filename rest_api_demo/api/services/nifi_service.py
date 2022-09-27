@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 
 def get_root_resource_id():
     # URL to get root process group information
-    resource_url = settings.HOST_URL + "/flow/process-groups/c2fc4b9b-3395-1c76-bea7-6d27e5170942"
+    resource_url = settings.HOST_URL + "/flow/process-groups/"+settings.ROOT_ID
 
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
     response = requests.get(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
@@ -153,7 +153,7 @@ def deploy_template(dep_id,template_file, params ):
 
 def getHopitalByName(hospital_name):
     # URL to get root process group information
-    resource_url = settings.HOST_URL + "/flow/process-groups/c2fc4b9b-3395-1c76-bea7-6d27e5170942"
+    resource_url = settings.HOST_URL + "/flow/process-groups/"+settings.ROOT_ID
 
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
     response = requests.get(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
@@ -198,7 +198,7 @@ def getPipelineDepByName(id_departement,name_pipeline):
     else:
         return ""
 
-def deleteDep(name_hopital,name_dep,name_pipeline):
+def deletePipeline(name_hopital,name_dep,name_pipeline):
     
     try:
         id_hopital = getHopitalByName(name_hopital)
@@ -249,7 +249,7 @@ def createPipelineInDepartement(name_hopital,name_dep,name_pipeline):
         id_hopital = getHopitalByName(name_hopital)
     except Exception as e :
         log.error('Error de recupération hopital: %s'%str(e))
-        return 'Error de recupération hopital: %s'% str(e)
+        raise Exception('Error de recupération hopital: %s'% str(e))
     try: 
         id_departement= getDepHopitalByName(id_hopital,name_dep)
     except Exception as e :
@@ -257,7 +257,12 @@ def createPipelineInDepartement(name_hopital,name_dep,name_pipeline):
         raise Exception('Error de recupération departement: %s'%str(e))
     for template_file in pathlib.Path(settings.TEMPLATE_DIR).iterdir():
         if template_file.is_file():
-            deploy_template(id_departement,template_file,params )
+            try: 
+                deploy_template(id_departement,template_file,params )
+            except Exception as e :
+                log.error('Error de création pipeline: %s'%str(e))
+                raise Exception('Error de création pipeline: %s'%str(e))
+            
 
 # # main function starts here
 # def main():

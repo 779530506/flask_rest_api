@@ -2,7 +2,7 @@ import logging
 from flask import request
 from flask_restplus import Resource
 from api.restplus import api
-from api.services.nifi_service import deleteDep,createPipelineInDepartement
+from api.services.nifi_service import deletePipeline,createPipelineInDepartement
 from api.serializers import nifi_delete_pipeline,nifi_deploy_pipeline
 
 log = logging.getLogger(__name__)
@@ -12,6 +12,7 @@ ns = api.namespace('nifi', description='Operations related to nifi')
 @ns.route('/')
 class NifiCollection(Resource):
 
+    @api.response(500, 'Erreur pipeline  not created.')
     @api.response(201, 'template successfully created.')
     @api.expect(nifi_deploy_pipeline)
     def post(self):
@@ -22,11 +23,15 @@ class NifiCollection(Resource):
         name_hospital= data['name_hospital']
         name_dep = data['name_dep']
         name_pipeline = data['name_pipeline']
-        createPipelineInDepartement(name_hospital,name_dep,name_pipeline)
-
-        return None, 201
+        
+        try:            
+            createPipelineInDepartement(name_hospital,name_dep,name_pipeline)
+            return "pipeline created successfull", 201
+        except Exception as e:
+            return str(e), 500
     
     @api.response(204, 'pipeline successfully deleted.')
+    @api.response(500, 'Erreur pipeline  not deleted.')
     @api.expect(nifi_delete_pipeline)
     def delete(self):
         """
@@ -36,7 +41,11 @@ class NifiCollection(Resource):
         name_hospital= data['name_hospital']
         name_dep = data['name_dep']
         name_pipeline = data['name_pipeline']
-        deleteDep(name_hospital,name_dep,name_pipeline)
-        return None, 204
+        try:
+            deletePipeline(name_hospital,name_dep,name_pipeline)
+            return "pipeline deleted successfull", 204
+        except Exception as e:
+            return str(e), 500
+
 
 

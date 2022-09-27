@@ -36,3 +36,4 @@ USERNAME_NIFI = "admin"
 PASSWORD_NIFI = "admin1234Thies"
 CERT_FILE = False
 HOST_URL = "https://" + HOSTNAME_NIFI + ":" + PORT_NIFI + "/nifi-api"
+ROOT_ID="c2fc4b9b-3395-1c76-bea7-6d27e5170942"
