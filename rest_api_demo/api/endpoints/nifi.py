@@ -4,7 +4,7 @@ from flask_restplus import Resource
 from api.restplus import api
 from api.services.nifi_service import deletePipeline,createPipelineInDepartement
 from api.serializers import nifi_delete_pipeline,nifi_deploy_pipeline
-
+from api.auth_middleware import token_required
 log = logging.getLogger(__name__)
 
 ns = api.namespace('nifi', description='Operations related to nifi')
@@ -15,6 +15,7 @@ class NifiCollection(Resource):
     @api.response(500, 'Erreur pipeline  not created.')
     @api.response(201, 'template successfully created.')
     @api.expect(nifi_deploy_pipeline)
+    @token_required
     def post(self):
         """
         Creates a new blog category.
@@ -33,6 +34,7 @@ class NifiCollection(Resource):
     @api.response(204, 'pipeline successfully deleted.')
     @api.response(500, 'Erreur pipeline  not deleted.')
     @api.expect(nifi_delete_pipeline)
+    @token_required
     def delete(self):
         """
         Deletes blog post.
