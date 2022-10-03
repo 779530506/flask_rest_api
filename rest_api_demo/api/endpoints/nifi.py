@@ -9,9 +9,16 @@ log = logging.getLogger(__name__)
 
 ns = api.namespace('nifi', description='Operations related to nifi')
 
+authorizations = {
+    'Bearer Auth': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'Authorization'
+    },
+}
 @ns.route('/')
 class NifiCollection(Resource):
-
+    @api.doc(params={'Authorization': {'in': 'header', 'description': 'An authorization token'}})
     @api.response(500, 'Erreur pipeline  not created.')
     @api.response(201, 'template successfully created.')
     @api.expect(nifi_deploy_pipeline)

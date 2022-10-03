@@ -39,7 +39,9 @@ class Token(Resource):
             return make_response('could not verify', 401, {'Authentication': 'login required"'})   
         user = UsersRepositorie.getUser(username=username)  
         if check_password_hash(user['password'], password):
-            token = jwt.encode({'id' : user['id'],'username' : user['username'], 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=3)},current_app.config["SECRET_KEY"], "HS256")
+            token = jwt.encode({'id' : user['id'],'username' : user['username'],
+             'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=5)},
+             current_app.config["SECRET_KEY"], "HS256")
         
             return jsonify({'token' : token})
         
