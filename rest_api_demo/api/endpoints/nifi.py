@@ -15,7 +15,7 @@ class NifiCollection(Resource):
     @api.response(500, 'Erreur pipeline  not created.')
     @api.response(201, 'template successfully created.')
     @api.expect(nifi_deploy_pipeline)
-   # @token_required
+    @token_required
     def post(self):
         """
         Creates a new blog category.
@@ -57,7 +57,7 @@ class PipelineRun(Resource):
     @api.response(500, 'Erreur pipeline  not running.')
     @api.expect(nifi_delete_pipeline)
     @api.doc(params={'Authorization': {'in': 'header', 'description': 'An authorization token'}})
-    #@token_required
+    @token_required
     def post(self):
 
         data = request.json
@@ -76,7 +76,7 @@ class PipelineStop(Resource):
     @api.response(500, 'Erreur pipeline  not stop.')
     @api.expect(nifi_delete_pipeline)
     @api.doc(params={'Authorization': {'in': 'header', 'description': 'An authorization token'}})
-    #@token_required
+    @token_required
     def post(self):
 
         data = request.json
