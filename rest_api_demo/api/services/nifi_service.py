@@ -121,7 +121,6 @@ def remove_template(template_id):
 def check_current_user():
     current_user_url = settings.HOST_URL + "/flow/current-user"
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
-    print(current_user_url)
     res = requests.get(current_user_url, headers=auth_header, verify=settings.CERT_FILE, proxies={'https': ''})
     handle_error(current_user_url, res)
 
@@ -263,7 +262,29 @@ def createPipelineInDepartement(name_hopital,name_dep,name_pipeline):
                 log.error('Error de création pipeline: %s'%str(e))
                 raise Exception('Error de création pipeline: %s'%str(e))
             
+# run process group
+def run_pipeline(name_hopital,name_dep,name_pipeline):
+    id_hopital = getHopitalByName(name_hopital) 
+    id_departement= getDepHopitalByName(id_hopital,name_dep)
+    info_processor= getPipelineDepByName(id_departement,name_pipeline)
+    id = info_processor["id"]
+    
+    url = settings.HOST_URL + "/flow/process-groups/"+id
+    auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
+    payload = {"id":id,"state":"RUNNING"}
+    res = requests.put(url, headers=auth_header, verify=settings.CERT_FILE,json=payload, proxies={'https': ''})
+    handle_error(url,res)
 
+def stop_pipeline(name_hopital,name_dep,name_pipeline):
+    id_hopital = getHopitalByName(name_hopital) 
+    id_departement= getDepHopitalByName(id_hopital,name_dep)
+    info_processor= getPipelineDepByName(id_departement,name_pipeline)
+    id = info_processor["id"]
+    url = settings.HOST_URL + "/flow/process-groups/"+id
+    auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
+    payload = {"id":id,"state":"STOPPED"}
+    res = requests.put(url, headers=auth_header, verify=settings.CERT_FILE,json=payload, proxies={'https': ''})
+    handle_error(url,res)
 # # main function starts here
 # def main():
 
