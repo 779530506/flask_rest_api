@@ -15,7 +15,7 @@ class NifiCollection(Resource):
     @api.response(500, 'Erreur pipeline  not created.')
     @api.response(201, 'template successfully created.')
     @api.expect(nifi_deploy_pipeline)
-    @token_required
+    #@token_required
     def post(self):
         """
         Creates a new blog category.
@@ -24,18 +24,23 @@ class NifiCollection(Resource):
         name_hospital= data['name_hospital']
         name_dep = data['name_dep']
         name_pipeline = data['name_pipeline']
-
+        response = {}
         try:            
             createPipelineInDepartement(name_hospital,name_dep,name_pipeline)
-            return "pipeline created successfull", 201
+            response["message"] =  "pipeline created successfull"
+            response["code"] =  201
+            return {"response" : response }
         except Exception as e:
-            return str(e), 500
+            response["message"] =  "Erreur pipeline not created "
+            response["code"] =  500
+            response["error"] =  str(e)
+            return {"response" : response }
     
     @api.response(204, 'pipeline successfully deleted.')
     @api.response(500, 'Erreur pipeline  not deleted.')
     @api.expect(nifi_delete_pipeline)
     @api.doc(params={'Authorization': {'in': 'header', 'description': 'An authorization token'}})
-    @token_required
+    #@token_required
     def delete(self):
         """
         Deletes blog post.
@@ -44,11 +49,16 @@ class NifiCollection(Resource):
         name_hospital= data['name_hospital']
         name_dep = data['name_dep']
         name_pipeline = data['name_pipeline']
+        response ={}
         try:
             deletePipeline(name_hospital,name_dep,name_pipeline)
-            return "pipeline deleted successfull", 204
+            #return "pipeline deleted successfull", 204
+            response["message"] =  "pipeline deleted successfull"
+            response["code"] =  204
         except Exception as e:
-            return str(e), 500
+            response["message"] =  "Erreur! pipeline not deleted, check if pipeline exist "
+            response["code"] =  500
+        return {"response" : response }
 
 
 @ns.route('/pipeline_run')
@@ -76,7 +86,7 @@ class PipelineStop(Resource):
     @api.response(500, 'Erreur pipeline  not stop.')
     @api.expect(nifi_delete_pipeline)
     @api.doc(params={'Authorization': {'in': 'header', 'description': 'An authorization token'}})
-    @token_required
+   # @token_required
     def post(self):
 
         data = request.json

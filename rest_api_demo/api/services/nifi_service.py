@@ -212,7 +212,7 @@ def deletePipeline(name_hopital,name_dep,name_pipeline):
         raise Exception('Error de recupération departement: %s'%str(e))
     try: 
         info_processor= getPipelineDepByName(id_departement,name_pipeline)
-        client_id = info_processor["revision"]["clientId"]
+        #client_id = info_processor["revision"]["clientId"]
         id_processor_group = info_processor["id"]
         version = info_processor["revision"]["version"]
     except Exception as e :
@@ -221,7 +221,8 @@ def deletePipeline(name_hopital,name_dep,name_pipeline):
     
     
     try:
-        resource_url = settings.HOST_URL + "/process-groups/"+id_processor_group+"?clientId="+client_id+"&version="+str(version)
+        #resource_url = settings.HOST_URL + "/process-groups/"+id_processor_group+"?clientId="+client_id+"&version="+str(version)
+        resource_url = settings.HOST_URL + "/process-groups/"+id_processor_group+"?version="+str(version)
         auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
         response = requests.delete(resource_url, headers=auth_header, verify=False, proxies={'https': ''})
         handle_error(resource_url, response)
