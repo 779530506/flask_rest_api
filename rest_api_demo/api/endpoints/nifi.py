@@ -67,18 +67,23 @@ class PipelineRun(Resource):
     @api.response(500, 'Erreur pipeline  not running.')
     @api.expect(nifi_delete_pipeline)
     @api.doc(params={'Authorization': {'in': 'header', 'description': 'An authorization token'}})
-    @token_required
+  #  @token_required
     def post(self):
 
         data = request.json
         name_hospital= data['name_hospital']
         name_dep = data['name_dep']
         name_pipeline = data['name_pipeline']
+        response = {}
         try:
             run_pipeline(name_hospital,name_dep,name_pipeline)
-            return "pipeline run successfull", 200
+            response["message"] =  "pipeline started successfull"
+            response["code"] =  200
+            return {"response" : response },200
         except Exception as e:
-            return str(e), 500
+            response["message"] =  "Error, pipeline not started "
+            response["code"] =  500
+            return {"response" : response },500
 
 @ns.route('/pipeline_stop')
 class PipelineStop(Resource):
@@ -93,11 +98,16 @@ class PipelineStop(Resource):
         name_hospital= data['name_hospital']
         name_dep = data['name_dep']
         name_pipeline = data['name_pipeline']
+        response ={}
         try:
             stop_pipeline(name_hospital,name_dep,name_pipeline)
-            return "pipeline stopped successfull", 200
+            response["message"] =  "pipeline stopped successfull"
+            response["code"] =  200
+            return {"response" : response },200
         except Exception as e:
-            return str(e), 500
+            response["message"] =  "Error, pipeline not stopped "
+            response["code"] =  500
+            return {"response" : response },500
 
 
 
