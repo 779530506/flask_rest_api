@@ -18,11 +18,13 @@ class UsersCollection(Resource):
     @api.response(201, 'user successfully created.')
     @api.expect(user_register)
     def post(self): 
+        response={}
         data = request.get_json() 
         hashed_password = generate_password_hash(data['password'], method='sha256')
-        
         UsersRepositorie.createUser(email=data["email"],password=hashed_password,username=data["username"])
-        return 'user successfully created.',201
+        response["message"] =  "user created successfull"
+        response["code"] =  201
+        return {"response" : response }
 
     @api.marshal_with(user_show, envelope='resource')
     def get(self, **kwargs):
