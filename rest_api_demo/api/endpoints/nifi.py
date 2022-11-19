@@ -2,6 +2,7 @@ import logging
 from flask import request
 from flask_restplus import Resource
 from api.restplus import api
+from api.services.opensearch_service import OpenSearchClass
 from api.services.nifi_service import deletePipeline,createPipelineInDepartement,run_pipeline,stop_pipeline
 from api.serializers import nifi_delete_pipeline,nifi_deploy_pipeline
 from api.auth_middleware import token_required
@@ -15,6 +16,7 @@ class NifiCollection(Resource):
     @api.response(500, 'Erreur pipeline  not created.')
     @api.response(201, 'template successfully created.')
     @api.expect(nifi_deploy_pipeline)
+
     #@token_required
     def post(self):
         """
@@ -25,11 +27,17 @@ class NifiCollection(Resource):
         name_dep = data['name_dep']
         name_pipeline = data['name_pipeline']
         response = {}
-        try:            
-            createPipelineInDepartement(name_hospital,name_dep,name_pipeline)
-            response["message"] =  "pipeline created successfull"
-            response["code"] =  201
-            return {"response" : response }
+        try:
+            #createPipelineInDepartement(name_hospital,name_dep,name_pipeline)
+            if OpenSearchClass.createIndexTemplate(name_hospital+'_logs_'+name_dep+'_'+name_pipeline):
+                OpenSearchClass.createIndex(name_hospital+'_logs_'+name_dep+'_'+name_pipeline)   
+                response["message"] =  "pipeline created successfull"
+                response["code"] =  201
+                return {"response" : response }
+                     
+            
+            
+            
         except Exception as e:
             response["message"] =  "Erreur pipeline not created "
             response["code"] =  500

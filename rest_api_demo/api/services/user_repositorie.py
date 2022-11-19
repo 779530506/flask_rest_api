@@ -37,3 +37,5 @@ class UsersRepositorie:
         user = Users.query.filter_by(id = id).first()
         db.session.delete(user)
         db.session.commit()
+
+     

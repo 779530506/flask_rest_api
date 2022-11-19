@@ -1,6 +1,6 @@
 import logging
 from flask import request,jsonify,make_response,current_app
-from flask_restplus import Resource
+from flask_restplus import Resource 
 from api.restplus import api
 from api.services.nifi_service import deletePipeline,createPipelineInDepartement
 from api.services.user_repositorie import UsersRepositorie
@@ -46,3 +46,5 @@ class Token(Resource):
             return jsonify({'token' : token})
         
         return make_response('User login incorrecte',  401, {'Authentication': '"login required"'})
+
+   
