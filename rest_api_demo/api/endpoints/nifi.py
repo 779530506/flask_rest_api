@@ -16,7 +16,7 @@ class NifiCollection(Resource):
     @api.response(500, 'Erreur pipeline  not created.')
     @api.response(201, 'template successfully created.')
     @api.expect(nifi_deploy_pipeline)
-
+    # creation pipeline
     #@token_required
     def post(self):
         """
@@ -27,10 +27,11 @@ class NifiCollection(Resource):
         name_dep = data['name_dep']
         name_pipeline = data['name_pipeline']
         response = {}
+        openSearchClass =OpenSearchClass()
         try:
-            #createPipelineInDepartement(name_hospital,name_dep,name_pipeline)
-            if OpenSearchClass.createIndexTemplate(name_hospital+'_logs_'+name_dep+'_'+name_pipeline):
-                OpenSearchClass.createIndex(name_hospital+'_logs_'+name_dep+'_'+name_pipeline)   
+            createPipelineInDepartement(name_hospital,name_dep,name_pipeline)
+            if openSearchClass.create_storage_Opensearch(name_pipeline)["code"] in [1,2]:
+                #OpenSearchClass.createIndex(name_hospital+'_logs_'+name_dep+'_'+name_pipeline)   
                 response["message"] =  "pipeline created successfull"
                 response["code"] =  201
                 return {"response" : response }

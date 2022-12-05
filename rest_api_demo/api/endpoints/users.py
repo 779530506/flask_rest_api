@@ -4,6 +4,7 @@ from flask_restplus import Resource
 from api.restplus import api
 from api.services.nifi_service import deletePipeline,createPipelineInDepartement
 from api.services.user_repositorie import UsersRepositorie
+from api.services.opensearch_service import OpenSearchClass
 from werkzeug.security import generate_password_hash,check_password_hash
 from api.serializers import user_register,user_show,user_login
 import jwt
@@ -21,7 +22,14 @@ class UsersCollection(Resource):
         response={}
         data = request.get_json() 
         hashed_password = generate_password_hash(data['password'], method='sha256')
-        UsersRepositorie.createUser(email=data["email"],password=hashed_password,username=data["username"])
+        
+        openSearchClass = OpenSearchClass()
+        res = openSearchClass.createUserwithRoleAndTenant(username= data["username"],password =data["password"])
+        if not res:
+            response["message"] =  "user not created "
+            response["code"] =  400
+            
+        UsersRepositorie.createUser(email=data["email"],password=hashed_password,username=data["username"])        
         response["message"] =  "user created successfull"
         response["code"] =  201
         return {"response" : response }
