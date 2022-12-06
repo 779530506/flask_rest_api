@@ -26,14 +26,20 @@ class NifiCollection(Resource):
         name_hospital= data['name_hospital']
         name_dep = data['name_dep']
         name_pipeline = data['name_pipeline']
+        username=data['username']
         response = {}
         openSearchClass =OpenSearchClass()
         try:
-            createPipelineInDepartement(name_hospital,name_dep,name_pipeline)
-            if openSearchClass.create_storage_Opensearch(name_pipeline)["code"] in [1,2]:
-                #OpenSearchClass.createIndex(name_hospital+'_logs_'+name_dep+'_'+name_pipeline)   
+            
+            res_opensearch = openSearchClass.create_storage_Opensearch(name_pipeline,username)["code"]
+            if res_opensearch in [1,2]:
+                createPipelineInDepartement(name_hospital,name_dep,name_pipeline,username)
                 response["message"] =  "pipeline created successfull"
                 response["code"] =  201
+                return {"response" : response }
+            else:
+                response["message"] =  "Erreur, pipeline not created"
+                response["code"] =  400
                 return {"response" : response }
                      
             

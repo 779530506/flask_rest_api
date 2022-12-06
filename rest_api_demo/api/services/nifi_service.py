@@ -46,7 +46,7 @@ def get_template_name(file):
 def upload_template(template_file_name,params):
     upload_url = settings.HOST_URL + "/process-groups/" + get_root_resource_id() + "/templates/upload"
     print (upload_url)
-    file_string = open(settings.TEMPLATE_DIR+ "" + template_file_name, 'r').read().replace('TEMPLATE_PIPELINE',params["name_pipeline"])
+    file_string = open(settings.TEMPLATE_DIR+ "" + template_file_name, 'r').read().replace('PIPELINENAME',params["name_pipeline"])
     file_string=file_string.replace('KAFKA_TOPIC_NAME',params["KAFKA_TOPIC_NAME"])
     file_string=file_string.replace('ELASTIC_URL_PORT', settings.ELASTIC_URL_PORT)
     file_string=file_string.replace('ELASTIC_PASSWORD', settings.ELASTIC_PASSWORD)
@@ -57,6 +57,8 @@ def upload_template(template_file_name,params):
     file_string=file_string.replace('KAFKA_Group_ID_NAME', params["KAFKA_Group_ID_NAME"])
     file_string=file_string.replace('ELASTIC_INDEX_NAME',params["ELASTIC_INDEX_NAME"])
     file_string=file_string.replace('DLQ_KAFKA_TOPIC', settings.DLQ_KAFKA_TOPIC)
+    file_string=file_string.replace('USERNAMEOWNFLOW', params["USERNAMEOWNFLOW"])
+
     
   
 
@@ -232,16 +234,18 @@ def deletePipeline(name_hopital,name_dep,name_pipeline):
     except Exception as e:
         raise Exception('impossible de suprimer un pipeline: %s'% str(e))
 
-def createPipelineInDepartement(name_hopital,name_dep,name_pipeline):
+def createPipelineInDepartement(name_hopital,name_dep,name_pipeline,username):
    
-    KAFKA_Group_ID_NAME = '_'.join(["elastic",name_hopital,name_dep,name_pipeline])
-    KAFKA_TOPIC_NAME    = '_'.join([name_hopital,name_dep,name_pipeline])
-    ELASTIC_INDEX_NAME = '_'.join([name_hopital,name_dep,name_pipeline])
+    KAFKA_Group_ID_NAME = '_'.join(["nifi",username,name_pipeline])
+    KAFKA_TOPIC_NAME    = '_'.join([username,name_pipeline])
+    ELASTIC_INDEX_NAME = '_'.join(["log_hospital_index_for",username,name_pipeline])
+    
     params = {
         'KAFKA_Group_ID_NAME' : KAFKA_Group_ID_NAME,
         'KAFKA_TOPIC_NAME': KAFKA_TOPIC_NAME,
         'name_pipeline': name_pipeline,
-        'ELASTIC_INDEX_NAME': ELASTIC_INDEX_NAME 
+        'ELASTIC_INDEX_NAME': ELASTIC_INDEX_NAME ,
+        'USERNAMEOWNFLOW' : username
         }
     # Make sure current user login is okay
     check_current_user()

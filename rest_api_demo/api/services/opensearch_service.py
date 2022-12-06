@@ -146,9 +146,9 @@ class OpenSearchClass:
 
     return response
 
-  def create_storage_Opensearch(self,pipeline_name):
-    self.create_hospital_log_index_template(pipeline_name)
-    response = self.create_hospital_log_alias(pipeline_name)
+  def create_storage_Opensearch(self,pipeline_name,username):
+    self.create_hospital_log_index_template(pipeline_name,username)
+    response = self.create_hospital_log_alias(pipeline_name,username)
 
     return response
 
