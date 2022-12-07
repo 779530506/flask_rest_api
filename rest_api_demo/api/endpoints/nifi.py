@@ -31,8 +31,8 @@ class NifiCollection(Resource):
         openSearchClass =OpenSearchClass()
         try:
             
-            res_opensearch = openSearchClass.create_storage_Opensearch(name_pipeline,username)["code"]
-            if res_opensearch in [1,2]:
+            res_opensearch = openSearchClass.create_storage_Opensearch(name_pipeline,username)
+            if res_opensearch["code"] in [1,2]:
                 createPipelineInDepartement(name_hospital,name_dep,name_pipeline,username)
                 response["message"] =  "pipeline created successfull"
                 response["code"] =  201
@@ -40,6 +40,7 @@ class NifiCollection(Resource):
             else:
                 response["message"] =  "Erreur, pipeline not created"
                 response["code"] =  400
+                response["resul"]=res_opensearch
                 return {"response" : response }
                      
             

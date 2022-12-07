@@ -30,3 +30,7 @@ user_login = api.model('User register ', {
     'password': fields.String(required=True),
     'email': fields.String(required=True),
 })
+
+username = api.model('User register ', {
+    'username': fields.String(required=True),
+})

@@ -131,7 +131,7 @@ class OpenSearchClass:
       else:
 
         logger.error("Error while creating index with code" + str(response_put.status_code) + "and message error " + str(response_put.content))
-        response["message"] ="The alias  has been successfully created "+pipeline_name
+        response["message"] ="The alias  not created "+pipeline_name
         response["code"] =0
             
 
@@ -275,20 +275,19 @@ class OpenSearchClass:
         return res
     else:
       return False
-# def getClient():
-#     host = '51.77.212.74'
-#     port = 9200
-#     auth = ('admin', 'admin') # For testing only. Don't store credentials in code.
-#     ca_certs_path = '/full/path/to/root-ca.pem' # Provide a CA bundle if you use intermediate CAs with your root CA.
 
-#     # Create the client with SSL/TLS enabled, but hostname verification disabled.
-#     client = OpenSearch(
-#         hosts = [{'host': host, 'port': port}],
-#         http_compress = True, # enables gzip compression for request bodies
-#         http_auth = auth,
-#         use_ssl = True,
-#         verify_certs = False,
-#         ssl_assert_hostname = False,
-#         ssl_show_warn = False,
-#     )
-#     return client
+  def deleteUser (self,  username):
+    response = {}
+    url="{}/_opendistro/_security/api/internalusers/{}".format(self.url, username)
+    response_delete=requests.delete(url=url , auth=self.auth, verify=False)
+    if response_delete.status_code == 200:
+      response["message"] =username+ " supprimé dans le serveur"  
+      response["code"] =1
+      return response
+    if response_delete.status_code == 404:
+      response["message"] =username+ " n'existe pas dans le serveur"  
+      response["code"] =2
+      return response
+    else:
+      return   False
+    

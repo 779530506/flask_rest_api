@@ -6,7 +6,7 @@ from api.services.nifi_service import deletePipeline,createPipelineInDepartement
 from api.services.user_repositorie import UsersRepositorie
 from api.services.opensearch_service import OpenSearchClass
 from werkzeug.security import generate_password_hash,check_password_hash
-from api.serializers import user_register,user_show,user_login
+from api.serializers import user_register,user_show,user_login,username
 import jwt
 import datetime
 log = logging.getLogger(__name__)
@@ -37,6 +37,13 @@ class UsersCollection(Resource):
     @api.marshal_with(user_show, envelope='resource')
     def get(self, **kwargs):
         return UsersRepositorie.getAllUsers()     
+    @api.expect(username)
+    def delete(self):
+        data = request.json
+        username = data['username']
+        openSearchClass = OpenSearchClass()
+        return openSearchClass.deleteUser(username)
+
 
 @ns.route('/token')
 class Token(Resource): 
