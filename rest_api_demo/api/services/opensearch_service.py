@@ -112,7 +112,7 @@ class OpenSearchClass:
   
   def create_hospital_log_alias (self,  pipeline_name,username):
     response = {}
-    pipeline_name = "log_hospital_index_of"+username+"_"+pipeline_name
+    pipeline_name = "log_hospital_index_of_"+username+"_"+pipeline_name
     payload = {"aliases": {pipeline_name: {"is_write_index": True}}}
     response_get=requests.get(
             url="{}/{}".format(self.url, pipeline_name) , auth=self.auth, verify=False
