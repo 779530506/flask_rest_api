@@ -5,6 +5,7 @@ from flask import Flask, Blueprint
 import settings
 from api.endpoints.nifi import ns as nifi_namespace
 from api.endpoints.users import ns as users_namespace
+from api.endpoints.kafka import ns as kafka_namespace
 from api.restplus import api
 from database import db
 

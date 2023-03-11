@@ -20,7 +20,7 @@ class NifiCollection(Resource):
     #@token_required
     def post(self):
         """
-        Creates a new blog category.
+        Creates a new pipeline.
         """
         data = request.json
         name_hospital= data['name_hospital']
