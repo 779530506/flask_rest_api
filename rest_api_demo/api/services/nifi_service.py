@@ -46,7 +46,9 @@ def get_template_name(file):
 def upload_template(template_file_name,params):
     upload_url = settings.HOST_URL + "/process-groups/" + get_root_resource_id() + "/templates/upload"
     print (upload_url)
-    file_string = open(settings.TEMPLATE_DIR+ "" + template_file_name, 'r').read().replace('PIPELINENAME',params["name_pipeline"])
+    # breakpoint()
+    file_string = open(settings.TEMPLATE_DIR+ "" + template_file_name, 'r').read()
+    file_string=file_string.replace('TEMPLATE_PIPELINE',params["name_pipeline"])
     file_string=file_string.replace('KAFKA_TOPIC_NAME',params["KAFKA_TOPIC_NAME"])
     file_string=file_string.replace('ELASTIC_URL_PORT', settings.ELASTIC_URL_PORT)
     file_string=file_string.replace('ELASTIC_PASSWORD', settings.ELASTIC_PASSWORD)

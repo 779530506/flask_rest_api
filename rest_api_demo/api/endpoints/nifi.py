@@ -32,6 +32,7 @@ class NifiCollection(Resource):
         try:
             
             res_opensearch = openSearchClass.create_storage_Opensearch(name_pipeline,username)
+            # breakpoint()
             if res_opensearch["code"] in [1,2]:
                 createPipelineInDepartement(name_hospital,name_dep,name_pipeline,username)
                 response["message"] =  "pipeline created successfull"
@@ -59,7 +60,7 @@ class NifiCollection(Resource):
     #@token_required
     def delete(self):
         """
-        Deletes blog post.
+        Deletes pipeline.
         """
         data = request.json
         name_hospital= data['name_hospital']

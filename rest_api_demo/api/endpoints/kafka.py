@@ -34,6 +34,7 @@ class KafkaCollection(Resource):
         json_payload = json.dumps(req)
         json_payload = str.encode(json_payload)
         # push data into INFERENCE TOPIC
+        print(json_payload)
         producer.send(TOPIC_NAME, json_payload)
         producer.flush()
         print("Sent to consumer")

@@ -15,7 +15,7 @@ class OpenSearchClass:
     self.auth=(self.username,self.password)
   def create_hospital_log_index_template (self,  pipeline_name,username):
     response={}
-    pipeline_name = "log_hospital_index_of"+username+"_"+pipeline_name
+    pipeline_name = "log_hospital_index_of_"+username+"_"+pipeline_name
     payload={
       "index_patterns": [pipeline_name+"*"],
       "template": {
@@ -120,9 +120,7 @@ class OpenSearchClass:
     #Alias does not exist
     if response_get.status_code==404:
 
-      response_put=requests.put(
-        url="{}/{}".format(self.url, pipeline_name+"_000001") ,json=payload,
-        auth=self.auth, verify=False)
+      response_put=requests.put(url="{}/{}".format(self.url, pipeline_name+"_000001") ,json=payload,auth=self.auth, verify=False)
 
       if response_put.status_code in (200, 201):
         logger.info("The alias  has been successfully created "+pipeline_name)
