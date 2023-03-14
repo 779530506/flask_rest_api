@@ -24,16 +24,18 @@ class KafkaCollection(Resource):
         """
         Push to kafka.
         """
-        TOPIC_NAME = "Cancer_MultilayerPerceptron_Source"
+        TOPIC_NAME = "Cancer_Multilayer_PerceptronSource_sarr"
 
         producer = KafkaProducer(
             bootstrap_servers = settings.KAFKA_BROKER_PORT,
         )
+        # breakpoint()
 
         req = request.get_json()
         json_payload = json.dumps(req)
         json_payload = str.encode(json_payload)
         # push data into INFERENCE TOPIC
+        
         print(json_payload)
         producer.send(TOPIC_NAME, json_payload)
         producer.flush()
