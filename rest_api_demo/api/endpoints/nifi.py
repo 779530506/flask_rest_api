@@ -32,7 +32,7 @@ class NifiCollection(Resource):
         try:
             
             res_opensearch = openSearchClass.create_storage_Opensearch(name_pipeline,username)
-            # breakpoint()
+            #breakpoint()
             if res_opensearch["code"] in [1,2]:
                 createPipelineInDepartement(name_hospital,name_dep,name_pipeline,username)
                 response["message"] =  "pipeline created successfull"

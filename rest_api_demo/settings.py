@@ -5,7 +5,8 @@ from re import TEMPLATE
 FLASK_SERVER_NAME = 'localhost:5000'
 FLASK_DEBUG = True  # Do not use debug mode in production
 SECRET_KEY = '004f2sdaf45d3ads4e161a7dd2d17fddetf@eae47f'
-TEMPLATE_DIR ="template/"
+#TEMPLATE_DIR ="/home/abdoulayesarr/Documents/flask_rest_api/template/" # loc
+TEMPLATE_DIR ="/home/ubuntu/flask_rest_api/template/"   # prod
 # Flask-Restplus settings
 RESTPLUS_SWAGGER_UI_DOC_EXPANSION = 'list'
 RESTPLUS_VALIDATE = True
