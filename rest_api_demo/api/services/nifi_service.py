@@ -86,6 +86,7 @@ def instantiate_template(dep_id,template_file_name, originX, originY):
 
 # get list of templates that used for searching template id
 def get_templates():
+    
     get_template_instance_url = settings.HOST_URL + "/flow/templates"
     auth_header = {'Authorization': 'Bearer ' + get_auth_token()}
     response = requests.get(get_template_instance_url,  headers= auth_header, verify=settings.CERT_FILE, proxies={'https': ''})
@@ -99,6 +100,9 @@ def get_templates():
 def get_template_id(template_file_name):
     templates = get_templates()
     template_id = ""
+    if len(templates) == 0:
+        return 0
+        
     for template in templates:
         print(template)
         
@@ -111,6 +115,8 @@ def get_template_id(template_file_name):
 
 # removes a template from nifi cluster by its id.
 def remove_template(template_id):
+    if template_id == 0 :
+        return 0
     
     if template_id != "":
         delete_template_url = settings.HOST_URL + "/templates/" + template_id
@@ -146,8 +152,10 @@ def handle_error(endpoint, res):
 # deploys a template to nifi for a specified location
 def deploy_template(dep_id,template_file, params ):
     # start up position
+    
     origin_x = 661
     origin_y = -45
+    
     remove_template(get_template_id(template_file.name))
     upload_template(template_file.name,params)
     instantiate_template(dep_id,template_file.name, origin_x, origin_y)
@@ -250,6 +258,8 @@ def createPipelineInDepartement(name_hopital,name_dep,name_pipeline,username):
         'USERNAMEOWNFLOW' : username
         }
     # Make sure current user login is okay
+    
+    
     check_current_user()
     try:
         id_hopital = getHopitalByName(name_hopital)
@@ -261,8 +271,10 @@ def createPipelineInDepartement(name_hopital,name_dep,name_pipeline,username):
     except Exception as e :
         log.error('Error de recupération departement: %s'%str(e))
         raise Exception('Error de recupération departement: %s'%str(e))
+    
     for template_file in pathlib.Path(settings.TEMPLATE_DIR).iterdir():
         if template_file.is_file():
+            
             try: 
                 deploy_template(id_departement,template_file,params )
             except Exception as e :
